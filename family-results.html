@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deine drei Familienautos — FINN Prototyp</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<div class="wrap crumb"><a href="index.html">Start</a> › <a href="family.html">Familie</a> › Deine Auswahl</div>
+
+<div class="wrap seg-head">
+  <h1 id="headline">Drei Autos. Mehr brauchst du nicht.</h1>
+  <p class="mute" id="sub" style="max-width:620px"></p>
+  <div id="answers" style="margin-top:14px"></div>
+  <a href="family.html" class="small" style="text-decoration:underline">Antworten ändern</a>
+</div>
+
+<div class="wrap">
+  <div class="tiers" id="tiers"></div>
+  <div id="note"></div>
+
+  <div style="margin-top:64px">
+    <h2 style="font-size:24px">Wenn du doch vergleichen willst</h2>
+    <p class="mute small">Alle Modelle, die zu <span id="critline"></span> passen — sortiert nach Preis.</p>
+    <div class="cars" id="more" style="margin:22px 0 80px"></div>
+  </div>
+</div>
+
+<div id="ftr"></div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+mount('family');
+
+// answers come from the quiz, or from the URL so a result can be shared/deep-linked
+const p = new URLSearchParams(location.search);
+const a = p.get('size') ? { size: p.get('size'), use: p.get('use') || 'commute' } : store.get();
+if (!a.size || !a.use) location.href = 'family.html';
+track('page_view', { page: 'family_results', variant: 'B', ...a });
+
+const needSeats = +a.size === 7 ? 7 : (+a.size >= 5 ? 5 : 4);
+
+/* ---------- safety: scored from the real equipment strings ---------- */
+const SAFE_WORDS = ['Notbrems', 'Spurhalte', 'Spurassistent', 'Totwinkel', 'Abstands', 'Adaptive',
+                    'Müdigkeit', 'Verkehrszeichen', 'Autonomes Fahren', 'Isofix', 'Kollision'];
+const safetyScore = c => {
+  const t = (c.safety || []).join(' ');
+  let s = (c.safety || []).length * 5;
+  SAFE_WORDS.forEach(w => { if (t.includes(w)) s += 8; });
+  if (/Autonomes Fahren [23]/.test(t)) s += 14;
+  return Math.min(100, s);
+};
+
+/* ---------- how they drive decides drivetrain, size and towing ---------- */
+const USE = {
+  city: {
+    label: 'Stadt & Kurzstrecke',
+    fit: c => (c.fuel === 'Elektro' ? 30 : /Hybrid/.test(c.fuel) ? 18 : 0)
+            + (c.length && c.length < 4400 ? 14 : c.length > 4750 ? -16 : 4),
+    why: c => c.fuel === 'Elektro' ? 'Elektro — im Stadtverkehr am günstigsten'
+            : /Hybrid/.test(c.fuel) ? 'Hybrid — rekuperiert im Stop-and-go'
+            : 'Kompakte Außenmaße für enge Parklücken'
+  },
+  commute: {
+    label: 'Pendeln & Autobahn',
+    fit: c => (c.fuel === 'Diesel' ? 22 : /Hybrid/.test(c.fuel) ? 18 : c.fuel === 'Elektro' ? ((c.ev_range || 0) >= 400 ? 20 : -8) : 6)
+            + (c.gear === 'Automatik' ? 12 : 0)
+            + (c.ps >= 130 ? 8 : 0),
+    why: c => c.fuel === 'Diesel' ? 'Diesel — die günstigste Wahl bei hoher Laufleistung'
+            : c.fuel === 'Elektro' ? `${c.ev_range} km Reichweite — Pendeln ohne Zwischenstopp`
+            : 'Sparsam auf der Langstrecke'
+  },
+  trip: {
+    label: 'Lange Fahrten & Urlaub',
+    fit: c => ((c.length || 4400) - 4300) / 22
+            + (c.fuel === 'Elektro' ? ((c.ev_range || 0) >= 430 ? 12 : -18) : 14)
+            + (c.drive === 'Allrad' ? 10 : 0)
+            + (c.seats >= 7 ? 8 : 0),
+    why: c => c.length > 4600 ? `${(c.length / 10).toFixed(0)} cm Außenlänge — Kofferraum für die ganze Familie`
+            : 'Reicht für Gepäck und lange Etappen'
+  },
+  gear: {
+    label: 'Immer viel dabei',
+    fit: c => (c.hitch ? 34 : -22)
+            + (['Kombi', 'Van', 'SUV'].includes(c.type) ? 14 : 0)
+            + ((c.length || 4400) - 4300) / 26,
+    why: c => c.hitch ? 'Anhängerkupplung ab Werk' : 'Großer Laderaum'
+  }
+};
+const use = USE[a.use] || USE.commute;
+
+/* ---------- who even qualifies ----------
+   Seats are a hard requirement. Each usage answer adds its own hard constraint —
+   a towbar for "immer viel dabei", real range for long trips. Only if a constraint
+   leaves too little stock do we drop it, and then we say so. */
+const HARD = {
+  city:    c => (c.length || 4400) < 4800,
+  commute: c => c.gear === 'Automatik' || c.fuel === 'Diesel' || /Hybrid/.test(c.fuel)
+                || (c.fuel === 'Elektro' && (c.ev_range || 0) >= 380),
+  trip:    c => c.fuel !== 'Elektro' || (c.ev_range || 0) >= 420,
+  gear:    c => c.hitch
+};
+const SIZE_FIT = {
+  2: c => ((c.length || 4400) < 4500 ? 12 : (c.length || 0) > 4750 ? -14 : 0),
+  4: c => ((c.length || 4400) >= 4300 && (c.length || 4400) <= 4750 ? 10 : 0),
+  5: c => ((c.length || 4400) - 4350) / 25,
+  7: c => 20
+};
+
+let relaxed = null;
+let pool = seg('family').filter(c => c.seats >= needSeats);
+if (pool.length < 3) {
+  pool = seg('family');
+  relaxed = `Mit ${needSeats} Sitzplätzen ist der Bestand gerade zu dünn für eine echte Auswahl — wir zeigen dir die nächstgrößeren Autos.`;
+}
+const strict = pool.filter(HARD[a.use] || (() => true));
+if (strict.length >= 4) pool = strict;
+else relaxed = relaxed || `Für „${use.label}" gibt es aktuell nur ${strict.length} passende Autos — wir haben die Auswahl etwas geöffnet.`;
+
+const sizeFit = SIZE_FIT[+a.size] || SIZE_FIT[4];
+const scored = pool.map(c => ({ c, fit: use.fit(c) + sizeFit(c), safe: safetyScore(c) }))
+                   .sort((x, y) => y.fit - x.fit);
+// keep only the genuinely well-matched half — a wide net makes every answer
+// return the same cheapest car and the questions stop meaning anything
+const eligible = scored.slice(0, Math.max(6, Math.round(scored.length * 0.45)))
+                       .sort((x, y) => x.c.price - y.c.price);
+
+/* ---------- the three tiers: cheap · safe (anchor) · premium ----------
+   Order matters. The cheapest sets the floor, the premium sets a ceiling that
+   is aspirational but still credible, and the safe choice sits between them —
+   that middle position is what the whole screen is built to sell. */
+const value = eligible[0];
+
+const premium =
+  [...eligible].filter(x => x.c.price >= value.c.price * 1.6 && x.c.price <= value.c.price * 3.2)
+               .sort((x, y) => (y.c.msrp - x.c.msrp) || (y.c.price - x.c.price))[0]
+  || [...eligible].sort((x, y) => y.c.price - x.c.price)[0];
+
+const middle = eligible
+  .filter(x => x !== value && x !== premium)
+  .filter(x => x.c.price > value.c.price * 1.05 && x.c.price < premium.c.price * 0.95)
+  .sort((x, y) => (y.safe - x.safe) || (y.fit - x.fit))[0]
+  || eligible[Math.floor(eligible.length / 2)];
+
+const tiers = [
+  { key: 'value',   x: value,   kicker: 'Solide Basis',    hero: false },
+  { key: 'secure',  x: middle,  kicker: 'Die sichere Wahl', hero: true },
+  { key: 'premium', x: premium, kicker: 'Mehr Komfort',     hero: false }
+].sort((m, n) => m.x.c.price - n.x.c.price);
+
+const deltaToBase = middle.c.price - value.c.price;
+
+document.getElementById('sub').textContent =
+  `Aus ${seg('family').length} Familienautos, gefiltert auf ${needSeats === 7 ? '7 Sitzplätze' : needSeats + ' Sitzplätze'} und „${use.label}". Eine Entscheidung statt einer Liste.`;
+document.getElementById('answers').innerHTML =
+  [a.size === '7' ? '7 Sitze nötig' : a.size + ' Personen', use.label]
+  .map(t => `<span class="mini">${t}</span>`).join('');
+document.getElementById('critline').textContent = `${needSeats} Sitzplätzen und „${use.label}"`;
+
+function safetyProof(c) {
+  const t = (c.safety || []).join(' ');
+  const out = [];
+  if (/Autonomes Fahren [23]/.test(t)) out.push('Teilautomatisiertes Fahren (Level 2)');
+  if (/Notbrems/.test(t)) out.push('Automatischer Notbremsassistent');
+  if (/Spurhalte|Spurassistent/.test(t)) out.push('Aktive Spurhaltung');
+  if (/Totwinkel/.test(t)) out.push('Totwinkel-Warner');
+  if (/Adaptive|Abstands/.test(t)) out.push('Abstandsregeltempomat');
+  if (/Isofix/.test(t)) out.push('Isofix auf allen Rücksitzen');
+  return out.slice(0, 5);
+}
+
+document.getElementById('tiers').innerHTML = tiers.map(t => {
+  const c = t.x.c, hero = t.hero;
+  const proof = hero ? safetyProof(c) : [];
+  return `<div class="tier ${hero ? "pick" : ""}">
+    ${hero ? '<div class="tier-badge">Am häufigsten gewählt</div>' : ''}
+    <div class="tier-kicker">${t.kicker}</div>
+    <div class="tier-ph"><img src="${c.img}" alt="${c.brand} ${c.model}"></div>
+    <div class="tier-nm">${c.brand} ${c.model}</div>
+    <div class="tier-sp">${c.type} · ${c.seats} Sitze · ${c.ps} PS · ${c.fuel}</div>
+    <div class="tier-price"><b>${eur(c.price)}</b><span>/Monat · ${c.term} Mon.</span></div>
+    ${hero
+      ? `<div class="tier-arg">
+           <div class="tier-arg-h">Warum dieses Auto ${deltaToBase > 0 ? eur(deltaToBase) + ' mehr wert ist' : 'die sicherste Wahl ist'}</div>
+           <ul class="incl">${proof.map(x => `<li>${x}</li>`).join('')}</ul>
+           <div class="small mute" style="margin-top:10px">Sicherheitsausstattung ${t.x.safe}/100 — der höchste Wert in dieser Auswahl.
+           ${deltaToBase > 0 ? `Das sind <b>${(deltaToBase / 30).toFixed(2).replace('.', ',')} €</b> pro Tag.` : ''}</div>
+         </div>`
+      : `<div class="tier-arg light"><ul class="incl">
+           <li>${use.why(c)}</li>
+           <li>${t.key === 'value' ? 'Günstigste Rate in dieser Auswahl' : `Neupreis ${eur(c.msrp)} — im Abo ab ${eur(c.price)}`}</li>
+         </ul></div>`}
+    <a class="btn ${hero ? '' : 'ghost'}" style="width:100%" href="car.html?id=${encodeURIComponent(c.id)}&from=family"
+       onclick="track('tier_click',{tier:'${t.key}',car:'${c.id}',delta:${c.price - value.c.price}})">
+       ${hero ? 'Diese Wahl treffen' : 'Ansehen'}</a>
+  </div>`;
+}).join('');
+
+document.getElementById('note').innerHTML = relaxed
+  ? `<div style="background:#fffdf5;border:1px solid #eadfb0;border-radius:12px;padding:12px 16px;margin-top:24px;font-size:14px;max-width:680px">⚠︎ ${relaxed}</div>` : '';
+
+document.getElementById('more').innerHTML = eligible.slice(0, 8)
+  .map(x => carCard(x.c, { from: 'family', specs: `${x.c.type} · ${x.c.seats} Sitze · ${x.c.fuel}` })).join('');
+</script>
+</body>
+</html>

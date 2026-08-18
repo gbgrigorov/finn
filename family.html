@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Familienauto finden — FINN Prototyp</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<div class="wrap crumb"><a href="index.html">Start</a> › Familie</div>
+
+<div class="quiz">
+  <div class="prog"><i id="bar"></i></div>
+
+  <!-- 1 -->
+  <div class="step on" data-step="1">
+    <div class="qn">Frage 1 von 2</div>
+    <h1>Wie viele Personen fahren regelmäßig mit?</h1>
+    <p class="mute">Daraus ergeben sich Sitzplätze, Kofferraum und Karosserieform — danach fragen wir nicht mehr.</p>
+    <div class="opts">
+      <button class="opt" data-k="size" data-v="2"><svg class="oi" viewBox="0 0 26 24" width="42" height="38" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7.5" r="3.2"/><path d="M1.6 20c0-3 2-4.6 4.4-4.6S10.4 17 10.4 20"/><circle cx="15" cy="7.5" r="3.2"/><path d="M10.6 20c0-3 2-4.6 4.4-4.6S19.4 17 19.4 20"/></svg><div class="ot">Zu zweit</div><div class="os">Kompakt reicht, Kofferraum zweitrangig</div></button>
+      <button class="opt" data-k="size" data-v="4"><svg class="oi" viewBox="0 0 35 24" width="56" height="38" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7.5" r="3.2"/><path d="M1.6 20c0-3 2-4.6 4.4-4.6S10.4 17 10.4 20"/><circle cx="15" cy="7.5" r="3.2"/><path d="M10.6 20c0-3 2-4.6 4.4-4.6S19.4 17 19.4 20"/><circle cx="24" cy="7.5" r="3.2"/><path d="M19.6 20c0-3 2-4.6 4.4-4.6S28.4 17 28.4 20"/></svg><div class="ot">3–4 Personen</div><div class="os">Ein Kindersitz, Wochenendgepäck</div></button>
+      <button class="opt" data-k="size" data-v="5"><svg class="oi" viewBox="0 0 44 24" width="70" height="38" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7.5" r="3.2"/><path d="M1.6 20c0-3 2-4.6 4.4-4.6S10.4 17 10.4 20"/><circle cx="15" cy="7.5" r="3.2"/><path d="M10.6 20c0-3 2-4.6 4.4-4.6S19.4 17 19.4 20"/><circle cx="24" cy="7.5" r="3.2"/><path d="M19.6 20c0-3 2-4.6 4.4-4.6S28.4 17 28.4 20"/><circle cx="33" cy="7.5" r="3.2"/><path d="M28.6 20c0-3 2-4.6 4.4-4.6S37.4 17 37.4 20"/></svg><div class="ot">5 Personen</div><div class="os">Zwei Kindersitze, viel Gepäck</div></button>
+      <button class="opt" data-k="size" data-v="7"><svg class="oi" viewBox="0 0 26 24" width="42" height="38" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 16.6V8.8a2 2 0 0 1 2-2h13.4a2.4 2.4 0 0 1 1.9 1l3 4.4v4.4"/><path d="M4.8 12.2h17.4"/><path d="M12.6 6.8v5.4"/><circle cx="6.8" cy="17" r="2.4"/><circle cx="18.6" cy="17" r="2.4"/></svg><div class="ot">Wir brauchen 7 Sitze</div><div class="os">Großfamilie, Fahrgemeinschaft, Oma dabei</div></button>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="step" data-step="2">
+    <div class="qn">Frage 2 von 2</div>
+    <h1>Wie fährst du normalerweise?</h1>
+    <p class="mute">Die letzte Frage. Danach zeigen wir dir drei Autos — mehr brauchst du nicht.</p>
+    <div class="opts">
+      <button class="opt" data-k="use" data-v="city"><svg class="oi" viewBox="0 0 26 24" width="42" height="38" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20.6h22"/><path d="M4.4 20.6V9.4l5.2-3.2v14.4"/><path d="M9.6 20.6V11h5.8a1.8 1.8 0 0 1 1.8 1.8v7.8"/><path d="M17.2 20.6v-5.4h3.4a1.4 1.4 0 0 1 1.4 1.4v4"/><path d="M6.6 11.4h1M6.6 14.4h1M12 14h1.6M12 17h1.6"/></svg><div class="ot">Stadt &amp; Kurzstrecke</div><div class="os">Kita, Einkauf, selten über 50 km am Stück</div></button>
+      <button class="opt" data-k="use" data-v="commute"><svg class="oi" viewBox="0 0 26 24" width="42" height="38" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5.6 21 10.4 4M20.4 21 15.6 4"/><path d="M13 5.4v2.4M13 11v2.6M13 16.6V19"/></svg><div class="ot">Pendeln &amp; Autobahn</div><div class="os">Jeden Tag die gleiche Strecke, viel Kilometer</div></button>
+      <button class="opt" data-k="use" data-v="trip"><svg class="oi" viewBox="0 0 26 24" width="42" height="38" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17v-2.6l1.6-.5 2.8-4.3A2.5 2.5 0 0 1 8.5 8.4h7.8a2.5 2.5 0 0 1 2 1l3 4.5 1.7.4V17"/><path d="M6.2 13.6h14.4"/><path d="M8.4 8.4V6.6a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1.8"/><circle cx="7.4" cy="17.4" r="2.4"/><circle cx="18.2" cy="17.4" r="2.4"/></svg><div class="ot">Lange Fahrten &amp; Urlaub</div><div class="os">Vollgepackt in die Berge oder ans Meer</div></button>
+      <button class="opt" data-k="use" data-v="gear"><svg class="oi" viewBox="0 0 26 24" width="42" height="38" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16.4v-2.2l1.5-.5 3-4.2A2.4 2.4 0 0 1 8.4 8.5h10.2A2.7 2.7 0 0 1 21.2 11v5.4"/><path d="M5.4 13.6h15"/><path d="M21.2 15.4h2.2a1.4 1.4 0 0 1 0 2.8"/><path d="M9 8.5V6.2h6v2.3"/><circle cx="7" cy="16.8" r="2.3"/><circle cx="17.4" cy="16.8" r="2.3"/></svg><div class="ot">Immer viel dabei</div><div class="os">Anhänger, Fahrräder, Hund, Sportzeug</div></button>
+    </div>
+  </div>
+
+  <div class="qnav">
+    <button class="btn ghost" id="back" style="visibility:hidden">← Zurück</button>
+    <span class="small mute" id="hint">Klicke eine Antwort — es geht automatisch weiter</span>
+  </div>
+</div>
+
+<div id="ftr"></div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+mount('family');
+track('page_view', {page:'family_quiz', variant:'B'});
+store.clear();
+
+let step = 1;
+const total = 2;
+const setStep = n => {
+  step = n;
+  document.querySelectorAll('.step').forEach(s => s.classList.toggle('on', +s.dataset.step === n));
+  document.getElementById('bar').style.width = (n / total * 100) + '%';
+  document.getElementById('back').style.visibility = n > 1 ? 'visible' : 'hidden';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+setStep(1);
+
+document.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+  b.parentElement.querySelectorAll('.opt').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  store.set({ [b.dataset.k]: b.dataset.v });
+  track('quiz_answer', { q: b.dataset.k, a: b.dataset.v, step });
+  if (step < total) { setTimeout(() => setStep(step + 1), 260); return; }
+  // last answer — go straight to the three cars, no budget question
+  track('quiz_completed', store.get());
+  setTimeout(() => location.href = 'family-results.html', 300);
+});
+
+document.getElementById('back').onclick = () => setStep(Math.max(1, step - 1));
+</script>
+</body>
+</html>

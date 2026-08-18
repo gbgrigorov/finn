@@ -1,0 +1,13 @@
+# scraped source pages — only needed to regenerate cars.json, 27 MB of raw HTML
+home.html
+auto.html
+pages/
+cars_raw.json
+
+# screenshots from the local verification loop
+.shots/
+
+# scratch
+_*.html
+dl.sh
+.DS_Store

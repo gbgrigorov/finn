@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A/B Test: Segment-First Homepage — FINN Prototype</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+
+<div class="doc" style="padding-top:56px;padding-bottom:80px">
+  <div class="small mute" style="letter-spacing:.1em;text-transform:uppercase">Experiment brief · Prototype</div>
+  <h1>Segment-first homepage</h1>
+  <p style="font-size:19px;color:#444;max-width:720px">Replace the search-led entry point with three choices, and route each one into a flow built for it. Two candidate cuts: <b>by need</b> (Klein · Familie · Sport) and <b>by drivetrain</b> (Elektro · Hybrid · Benzin). Both are built — the test decides which, if either, beats search.</p>
+  <p><a class="btn" href="index.html">Variant B — by need →</a> <a class="btn" href="index-c.html">Variant C — by drivetrain →</a></p>
+
+  <div class="note">Everything below uses <b>assumed baselines</b>. In a real setup I'd replace them with your funnel numbers on day one — the structure of the test wouldn't change, only the sample size and the runtime.</div>
+
+  <h2>The problem</h2>
+  <p>A search box assumes the visitor already knows what they want. For a subscription product that is rarely true: people arrive knowing <em>why</em> they need a car — a second child, a new commute, a lease that just ended — not <em>which</em> car. So they land in a 70-model grid with filters for fuel type, gearbox and body style, and are asked to translate a life situation into car-industry vocabulary themselves.</p>
+  <p>That translation step is where undecided traffic leaks. It also costs us the single most valuable thing a first click can give us: <b>a declared intent</b>.</p>
+
+  <h2>Hypothesis</h2>
+  <p style="font-size:18px;border-left:3px solid #000;padding-left:18px">If we replace search with three need-based entry points, then homepage → configurator conversion increases, because visitors choose from a decision they can actually make (why) instead of one they can't yet (which).</p>
+
+  <h2>Why exactly these three</h2>
+  <p>Three is the point where the choice is still instant. Each one maps to a different buying psychology, and therefore to a different flow — that's the real substance of the test, not the cards themselves.</p>
+  <table>
+    <tr><th style="width:110px">Segment</th><th>Driver</th><th>What the flow does</th><th>Commercial angle</th></tr>
+    <tr><td><b>Small</b></td><td>Value. Price is the decision; everything else is a constraint.</td><td>Straight to a list sorted cheapest-first. No quiz — a question would feel like friction to someone who already knows they want the cheapest.</td><td>Volume &amp; efficiency. Win on total cost of ownership: insurance, tax, maintenance and registration are already in the price (~€175/mo they'd otherwise pay).</td></tr>
+    <tr><td><b>Family</b></td><td>Safety and fit, balanced against budget. The highest-anxiety, lowest-confidence buyer.</td><td>Two questions only — how many people, and how they drive. Everything else is inferable or is our job to argue, not theirs to specify. Then straight to three cars: cheap, safe, premium.</td><td>Highest upsell headroom. The middle car is the product: visually anchored between a cheaper and a dearer option, and argued on named safety equipment rather than on discount.</td></tr>
+    <tr><td><b>Sport</b></td><td>Emotion and self-image. Rational specs are post-rationalisation.</td><td>Dark, image-led collection sorted by desirability, not by rate. Price appears last and small.</td><td>Highest AOV. Protect the emotion — a filter bar here actively hurts.</td></tr>
+  </table>
+
+  <h2>Two ways to cut the same traffic</h2>
+  <p>B and C differ in one thing only: what the first click is about. Everything after it — the PDP, the checkout — is untouched in both.</p>
+  <table>
+    <tr><th style="width:120px"></th><th>Variant B — by need</th><th>Variant C — by drivetrain</th></tr>
+    <tr><td>The question</td><td>"What is the car for?"</td><td>"How should it drive?"</td></tr>
+    <tr><td>Choices</td><td>Klein · Familie · Sport</td><td>Elektro · Hybrid · Benzin &amp; Diesel</td></tr>
+    <tr><td>Assumes</td><td>The visitor knows their life situation. Almost always true.</td><td>The visitor has already settled the drivetrain question. Often not true — it is the single most-debated decision in car buying right now.</td></tr>
+    <tr><td>Strength</td><td>Works for the undecided, which is most of the traffic. Captures intent we can reuse in CRM.</td><td>Halves the catalogue in one click and is unambiguous — no one wonders which bucket they are in. Directly serviceable by existing filters.</td></tr>
+    <tr><td>Weakness</td><td>Bucket names are fuzzy; a cheap compact SUV belongs in two of them.</td><td>Segments by supply, not by demand. Sends the undecided away, and tells us nothing about <em>why</em> they came.</td></tr>
+    <tr><td>Data risk</td><td>Low — needs no new fields.</td><td><b>Real.</b> FINN's own <code>fuel</code> field labels 21 of the hybrids in this dataset as "Benzin"; only the engine string reveals them. A drivetrain-first homepage is only as honest as that field, so it needs cleaning before launch.</td></tr>
+  </table>
+  <div class="note">If we run all three arms at once, the sample per arm drops and the test takes roughly 50 % longer. My recommendation: run <b>A vs B</b> first, because B addresses the undecided visitor — the group search already fails. Hold C as the follow-up, or ship it as a secondary entry point below the fold where it costs nothing to measure.</div>
+
+  <h2>What we're actually testing</h2>
+  <p>This isn't a copy change, so I'd run it as one experiment with a shared primary metric rather than three separate tests — otherwise we can't attribute the effect to the concept.</p>
+  <table>
+    <tr><th style="width:200px"></th><th>Control (A)</th><th>Variant (B)</th></tr>
+    <tr><td>Entry point</td><td>Search / model grid</td><td>Three cards — need (B) or drivetrain (C)</td></tr>
+    <tr><td>Path after entry</td><td>One listing + filters for everyone</td><td>Three flows: price-sorted list · 2-question quiz → 3-tier choice · editorial collection</td></tr>
+    <tr><td>Escape hatch</td><td>—</td><td>"I already know what I'm looking for" link below the cards, plus the full grid further down the page</td></tr>
+    <tr><td>Everything downstream</td><td colspan="2">Identical. The PDP and checkout are untouched — only the argument shown on the PDP adapts to the segment.</td></tr>
+  </table>
+
+  <h2>Metrics</h2>
+  <div class="kpi">
+    <div><b>Primary</b><span class="small">Homepage session → configurator / PDP start. One metric, decided before launch.</span></div>
+    <div><b>Guardrail</b><span class="small">Completed subscriptions per session, and blended AOV. A CTR win that costs revenue is a loss.</span></div>
+    <div><b>Diagnostic</b><span class="small">Segment split, quiz drop-off per question, upsell take-rate, escape-hatch usage.</span></div>
+  </div>
+  <table>
+    <tr><th>Metric</th><th>Type</th><th>Assumed baseline</th><th>Target</th></tr>
+    <tr><td>Homepage → PDP / configurator</td><td>Primary</td><td>6.0 %</td><td>≥ 6.6 % (+10 % rel.)</td></tr>
+    <tr><td>Session → subscription</td><td>Guardrail</td><td>1.5 %</td><td>No significant drop</td></tr>
+    <tr><td>Average monthly rate booked</td><td>Guardrail</td><td>€ 520</td><td>No significant drop</td></tr>
+    <tr><td>Bounce rate on homepage</td><td>Secondary</td><td>—</td><td>Lower</td></tr>
+    <tr><td>Family quiz completion</td><td>Diagnostic (B only)</td><td>—</td><td>≥ 75 % (only two taps)</td></tr>
+    <tr><td>Share choosing the middle tier</td><td>Diagnostic (B only)</td><td>—</td><td>≥ 45 %</td></tr>
+    <tr><td>Upsell accept rate</td><td>Diagnostic (B only)</td><td>—</td><td>≥ 8 %</td></tr>
+  </table>
+
+  <h2>Sizing</h2>
+  <p>Two-sided test, α = 0.05, power = 80 %, primary baseline 6 %, minimum detectable effect +10 % relative:</p>
+  <p style="font-family:'SuisseIntl';font-size:20px">≈ 25,000 sessions per variant → ~50,000 total → <b>7–10 days</b> at an assumed 6–8k homepage sessions/day.</p>
+  <p class="mute small">Run full weeks to avoid weekday bias. No peeking — one read at the end, and I'd hold the call if the guardrails and the primary metric disagree.</p>
+
+  <h2>Risks and how I'd handle them</h2>
+  <table>
+    <tr><th style="width:220px">Risk</th><th>Mitigation</th></tr>
+    <tr><td>Three buckets don't cover everyone (vans, business, EV-only shoppers)</td><td>Keep the escape hatch and the full model grid on the page. If escape-hatch usage is high, that's a finding, not a failure — it sizes the fourth segment.</td></tr>
+    <tr><td>"Small" is read as size, not value — a cheap compact SUV belongs there too</td><td>Naming is its own follow-up test. Label copy is the cheapest thing to iterate once the concept is validated.</td></tr>
+    <tr><td>Quiz adds friction for the family segment</td><td>Cut to two questions, one tap each, auto-advance, back button, progress bar. We never ask for a budget — asking it invites the customer to anchor low before we have made the safety argument.</td></tr>
+    <tr><td>SEO impact from changing the homepage entry</td><td>Model and category pages stay untouched and stay linked; only the hero module is swapped.</td></tr>
+    <tr><td>CTR goes up, conversion goes down</td><td>That's the guardrail's job. Ship decisions come from the guardrails, not the headline number.</td></tr>
+  </table>
+
+  <h2>If it wins</h2>
+  <ol style="max-width:720px;color:#333">
+    <li><b>The segment becomes a first-class signal.</b> It's captured on the first click and carried through email, retargeting and returning-visitor personalisation — worth more than the CTR lift itself.</li>
+    <li><b>Family gets the real investment.</b> Highest anxiety, longest consideration, biggest upsell headroom — and the three-tier screen is where the mix shifts.</li>
+    <li><b>Round two:</b> test the naming, test four segments vs three, test whether Sport should hide price above the fold entirely, and test the middle tier's price gap — the decoy only works while the ladder stays credible.</li>
+  </ol>
+
+  <h2>About this prototype</h2>
+  <p>Hand-built as static HTML with vanilla JavaScript — no framework, no build step, no backend. It runs from a folder by opening <code>index.html</code>.</p>
+  <p>The 102 vehicles, their prices, term and mileage packages, equipment lists and photos are real data pulled from finn.com, so the recommendation logic and the upsell maths compute on actual numbers rather than placeholders. The scoring model, quiz weighting, three-tier anchoring, price-per-term selector, mileage upsell and the €/100 km comparison all compute on that data.</p>
+  <p>Open the browser console to watch the tracking events fire (<code>segment_selected</code>, <code>quiz_answer</code>, <code>tier_click</code>, <code>checkout_start</code>) — that's the instrumentation the experiment would need.</p>
+  <p class="mute small">Built with Claude Code in a single working session. It is a discussion prop, not a FINN product; all imagery and vehicle data belong to FINN.</p>
+</div>
+
+<div id="ftr"></div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>mount('ab'); track('page_view', {page:'ab_test_brief'});</script>
+</body>
+</html>

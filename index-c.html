@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FINN — Auto-Abo. Alles inklusive. (Prototyp Variante C)</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+
+<div class="hero">
+  <div class="hero-in">
+    <div class="hero-copy">
+      <h1>Wie soll dein Auto fahren?</h1>
+    </div>
+
+    <div class="choices">
+      <a class="choice" href="drive.html?type=elektro" onclick="track('segment_selected',{segment:'elektro',variant:'C'})">
+        <span class="t">Elektro</span>
+        <span class="s" id="s-elektro"></span>
+      </a>
+      <a class="choice" href="drive.html?type=hybrid" onclick="track('segment_selected',{segment:'hybrid',variant:'C'})">
+        <span class="t">Hybrid</span>
+        <span class="s" id="s-hybrid"></span>
+      </a>
+      <a class="choice" href="drive.html?type=verbrenner" onclick="track('segment_selected',{segment:'verbrenner',variant:'C'})">
+        <span class="t">Benzin</span>
+        <span class="s" id="s-verbrenner"></span>
+      </a>
+    </div>
+
+    <div class="hero-alt"><a href="#alle" onclick="track('search_fallback',{variant:'C'})" id="allLink">Alle Modelle ansehen</a></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Ein Preis. Alles drin.</h2>
+      <p class="mute">Versicherung, Steuer, Wartung, Zulassung, Verschleiß und Hauptuntersuchung sind immer enthalten. Beim Elektroauto zahlst du nur noch Strom, beim Verbrenner nur noch Sprit.</p>
+    </div>
+    <div class="grid4">
+      <div class="usp"><div class="n">01</div><h3>Neuwagen</h3><p class="mute small">Keine Abnutzung, kein Gebrauchtwagenrisiko. Direkt startklar.</p></div>
+      <div class="usp"><div class="n">02</div><h3>Ab 6 Monaten</h3><p class="mute small">Antrieb ausprobieren, statt sich drei Jahre zu binden.</p></div>
+      <div class="usp"><div class="n">03</div><h3>Lieferung nach Hause</h3><p class="mute small">Online abschließen, wir liefern bis vor die Haustür.</p></div>
+      <div class="usp"><div class="n">04</div><h3>Keine Anzahlung</h3><p class="mute small">Optional Anzahlung leisten und die Monatsrate senken.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="alle">
+  <div class="wrap">
+    <div class="sec-head"><h2>Unsere beliebtesten Modelle</h2>
+      <p class="mute">In Variante C liegt die Antriebsfrage vor der Modellfrage — die Liste kommt erst darunter.</p></div>
+    <div class="cars" id="popular"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Warum nach dem Antrieb fragen?</h2>
+    <p class="mute" style="max-width:720px">Der Antrieb ist die eine Frage, über die im Auto-Abo am meisten diskutiert wird — und die einzige, bei der eine falsche Wahl richtig teuer wird. Wer sie zuerst beantwortet, halbiert den Katalog in einem Klick.</p>
+    <p class="mute" style="max-width:720px"><strong>Die Gegenthese:</strong> Genau diese Frage haben die meisten noch nicht beantwortet. Variante B fragt stattdessen nach dem Bedarf und leitet den Antrieb daraus ab. Welche der beiden gewinnt, entscheidet der Test — nicht die Meinung.</p>
+    <p><a class="btn" href="ab-test.html">Beide Varianten im Testkonzept</a> <a class="btn ghost" href="index.html">Variante B ansehen</a></p>
+  </div>
+</section>
+
+<div id="ftr"></div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+window.VARIANT = 'C';
+mount('home');
+track('page_view', { page: 'home', variant: 'C' });
+
+[['elektro', 'Reichweite bis'], ['hybrid', 'ohne Kabel'], ['verbrenner', 'inkl. Diesel']].forEach(([t]) => {
+  const l = drive(t);
+  document.getElementById('s-' + t).textContent = `${l.length} Modelle · ab ${priceFrom(l)}`;
+});
+document.getElementById('allLink').textContent = `Alle ${CARS.length} Modelle ansehen`;
+
+const picks = [];
+['tesla', 'toyota', 'bmw', 'fiat'].forEach(b => {
+  const c = CARS.find(x => x.brand.toLowerCase().startsWith(b) && !picks.includes(x));
+  if (c) picks.push(c);
+});
+document.getElementById('popular').innerHTML = picks.slice(0, 4)
+  .map(c => carCard(c, { from: 'home_c' })).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Klein &amp; günstig — FINN Prototyp</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<div class="wrap crumb"><a href="index.html">Start</a> › Klein &amp; günstig</div>
+
+<div class="wrap seg-head">
+  <h1>Klein &amp; günstig</h1>
+  <p class="mute" style="max-width:640px">Sortiert nach Preis — das günstigste Auto steht oben. Versicherung, Steuer, Wartung und Zulassung sind bei jedem Preis schon drin.</p>
+</div>
+
+<div class="wrap">
+  <div class="bar">
+    <span class="small mute" style="margin-right:4px">Laufzeit</span>
+    <button class="chip" data-term="12">12 Monate</button>
+    <button class="chip on" data-term="24">24 Monate</button>
+    <span class="small mute" style="margin-left:20px">Budget bis <b id="budgetLbl">450 €</b></span>
+    <input type="range" id="budget" min="260" max="550" step="10" value="450">
+    <span style="margin-left:auto" class="small mute" id="count"></span>
+  </div>
+
+  <div style="background:var(--soft);border-radius:var(--rl);padding:18px 22px;margin-bottom:28px;display:flex;gap:26px;flex-wrap:wrap;align-items:center">
+    <div><b style="font-family:'SuisseIntl'">Was du sonst noch zahlen würdest</b>
+      <div class="small mute">Beim Leasing kommen im Schnitt oben drauf:</div></div>
+    <div class="small">Versicherung <b>~95 €</b></div>
+    <div class="small">Kfz-Steuer <b>~15 €</b></div>
+    <div class="small">Wartung &amp; Verschleiß <b>~55 €</b></div>
+    <div class="small">Zulassung <b>~10 €</b></div>
+    <div class="small" style="margin-left:auto"><b style="color:var(--good)">= ~175 €/Monat bei FINN inklusive</b></div>
+  </div>
+
+  <div class="cars" id="list"></div>
+  <p class="mute small" style="margin-top:30px">Preise inkl. 500 km/Monat. Mehr Kilometer buchbar — der Aufpreis wird auf der Fahrzeugseite transparent angezeigt.</p>
+</div>
+
+<div id="ftr"></div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+mount('small');
+track('page_view', {page:'segment_small', variant:'B'});
+
+let term = 24, budget = 450;
+const pool = seg('small');
+
+function priceFor(c, t) { return c.terms[t] || c.terms[String(t)] || c.price; }
+
+function render() {
+  const list = pool
+    .map(c => ({ c, p: priceFor(c, term) }))
+    .filter(x => x.p <= budget)
+    .sort((a, b) => a.p - b.p);
+
+  const bestPerPs = list.filter(x => x.c.ps > 0).sort((a, b) => a.p / a.c.ps - b.p / b.c.ps)[0];
+  const firstEv = list.find(x => x.c.fuel === 'Elektro');
+  document.getElementById('count').textContent = list.length + ' von ' + pool.length + ' Modellen';
+  document.getElementById('list').innerHTML = list.map((x, i) => {
+    const c = { ...x.c, price: x.p, term };
+    let tag = null, cls = '';
+    if (i === 0) { tag = 'Günstigstes Auto'; cls = 'g'; }
+    else if (x === bestPerPs) { tag = 'Bester Preis pro PS'; cls = 'y'; }
+    else if (c.fuel === 'Elektro' && x === firstEv) { tag = 'Günstigster Stromer'; cls = 'b'; }
+    return carCard(c, { tag, tagClass: cls, from: 'small',
+      specs: `${c.type.replace('Klein- und Kompaktwagen','Kompakt')} · ${c.seats} Sitze · ${c.ps} PS · ${c.fuel}` });
+  }).join('');
+}
+
+document.querySelectorAll('[data-term]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[data-term]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); term = +b.dataset.term; track('term_changed', {term}); render();
+});
+document.getElementById('budget').oninput = e => {
+  budget = +e.target.value;
+  document.getElementById('budgetLbl').textContent = budget + ' €';
+  render();
+};
+render();
+</script>
+</body>
+</html>

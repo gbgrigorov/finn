@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Antrieb — FINN Prototyp</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<div class="wrap crumb"><a href="index-c.html">Start</a> › <span id="crumb"></span></div>
+
+<div class="wrap seg-head">
+  <h1 id="title"></h1>
+  <p class="mute" id="lede" style="max-width:660px"></p>
+</div>
+
+<div class="wrap">
+  <div class="bar" id="sortbar"></div>
+  <div id="argument"></div>
+  <div class="cars" id="list"></div>
+  <p class="mute small" id="foot" style="margin:30px 0 70px"></p>
+</div>
+
+<div id="ftr"></div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+window.VARIANT = 'C';
+
+const type = ['elektro', 'hybrid', 'verbrenner'].includes(qs('type')) ? qs('type') : 'elektro';
+mount(type);
+track('page_view', { page: 'drive_' + type, variant: 'C' });
+
+/* running-cost assumptions, stated openly rather than hidden in a footnote */
+const STROM = 0.39, SPRIT = 1.75, KWH100 = 18;
+
+const CFG = {
+  elektro: {
+    crumb: 'Elektro',
+    title: 'Elektro',
+    lede: 'Laden statt tanken. Die Ladekarte ist nicht im Abo enthalten — dafür sind Versicherung, Steuer, Wartung und Zulassung es.',
+    sorts: [['range', 'Reichweite'], ['price', 'Preis'], ['power', 'Leistung']],
+    spec: c => `${c.ev_range} km Reichweite · ${c.seats} Sitze · ${c.ps} PS`,
+    tag: (c, i, list) => c.ev_range === Math.max(...list.map(x => x.ev_range || 0))
+      ? { tag: 'Größte Reichweite', cls: '' } : (i === 0 ? { tag: 'Beste Wahl', cls: 'g' } : {}),
+    argument: list => {
+      const avg = Math.round(list.reduce((s, c) => s + (c.ev_range || 0), 0) / list.length);
+      return `<div class="costbox">
+        <div><b>Was 100 km kosten</b><div class="small mute">Bei ${STROM.toFixed(2).replace('.', ',')} €/kWh und ${SPRIT.toFixed(2).replace('.', ',')} €/l — deine Preise können abweichen.</div></div>
+        <div class="costcol on"><span>Elektro</span><b>${(KWH100 * STROM).toFixed(2).replace('.', ',')} €</b><span class="small mute">${KWH100} kWh/100 km</span></div>
+        <div class="costcol"><span>Benzin</span><b>${(6.5 * SPRIT).toFixed(2).replace('.', ',')} €</b><span class="small mute">6,5 l/100 km</span></div>
+        <div class="costdelta">≈ ${eur((6.5 * SPRIT - KWH100 * STROM) * 10)} weniger pro 1.000 km<div class="small mute">Ø ${avg} km Reichweite in dieser Auswahl</div></div>
+      </div>`;
+    },
+    foot: 'Reichweite nach WLTP. Im Winter und auf der Autobahn liegt der reale Wert darunter.'
+  },
+  hybrid: {
+    crumb: 'Hybrid',
+    title: 'Hybrid',
+    lede: 'Elektrisch durch die Stadt, Verbrenner auf der Langstrecke. Kein Ladekabel nötig, keine Reichweitenrechnerei.',
+    sorts: [['price', 'Preis'], ['consumption', 'Verbrauch'], ['power', 'Leistung']],
+    spec: c => `${c.drive_type !== 'elektro' && c.consumption ? c.consumption.toString().replace('.', ',') + ' l/100 km · ' : ''}${c.seats} Sitze · ${c.ps} PS`,
+    tag: (c, i) => i === 0 ? { tag: 'Beste Wahl', cls: 'g' } : {},
+    argument: () => `<div class="costbox">
+        <div><b>Warum Hybrid der pragmatische Kompromiss ist</b><div class="small mute">Für alle, die keine eigene Wallbox haben.</div></div>
+        <div class="costcol on"><span>Laden</span><b>optional</b><span class="small mute">läuft auch ohne Kabel</span></div>
+        <div class="costcol"><span>Stadt</span><b>elektrisch</b><span class="small mute">dort, wo Verbrenner am meisten schlucken</span></div>
+        <div class="costcol"><span>Langstrecke</span><b>tanken</b><span class="small mute">5 Minuten, überall</span></div>
+      </div>`,
+    foot: 'Umfasst Voll- und Plug-in-Hybride. Verbrauchsangaben nach WLTP.'
+  },
+  verbrenner: {
+    crumb: 'Benzin & Diesel',
+    title: 'Benzin & Diesel',
+    lede: 'Einsteigen, tanken, weiterfahren. Die größte Auswahl im Katalog — und der schnellste Weg zu einem Auto, das einfach funktioniert.',
+    sorts: [['price', 'Preis'], ['consumption', 'Verbrauch'], ['power', 'Leistung']],
+    spec: c => `${c.fuel} · ${c.drive_type !== 'elektro' && c.consumption ? c.consumption.toString().replace('.', ',') + ' l/100 km · ' : ''}${c.seats} Sitze`,
+    tag: (c, i) => i === 0 ? { tag: 'Günstigstes Auto', cls: 'g' } : {},
+    argument: list => `<div class="costbox">
+        <div><b>Die größte Auswahl</b><div class="small mute">Kein Ladeverhalten, keine Wallbox, keine Planung.</div></div>
+        <div class="costcol on"><span>Modelle</span><b>${list.length}</b><span class="small mute">von ${CARS.length} im Katalog</span></div>
+        <div class="costcol"><span>Ab</span><b>${priceFrom(list)}</b><span class="small mute">pro Monat, alles inklusive</span></div>
+        <div class="costcol"><span>Tanken</span><b>5 Min.</b><span class="small mute">an jeder Tankstelle</span></div>
+      </div>`,
+    foot: 'Verbrauchsangaben nach WLTP. Diesel lohnt sich vor allem ab etwa 20.000 km im Jahr.'
+  }
+};
+
+const cfg = CFG[type];
+const pool = drive(type);
+let mode = cfg.sorts[0][0];
+
+document.title = `${cfg.title} im Auto-Abo — FINN Prototyp`;
+document.getElementById('crumb').textContent = cfg.crumb;
+document.getElementById('title').textContent = cfg.title;
+document.getElementById('lede').textContent = cfg.lede;
+document.getElementById('foot').textContent = cfg.foot;
+document.getElementById('argument').innerHTML = cfg.argument(pool);
+document.getElementById('sortbar').innerHTML =
+  `<span class="small mute" style="margin-right:4px">Sortierung</span>` +
+  cfg.sorts.map(([k, l], i) => `<button class="chip ${i === 0 ? 'on' : ''}" data-s="${k}">${l}</button>`).join('') +
+  `<span class="small mute" style="margin-left:auto">${pool.length} Modelle · ab ${priceFrom(pool)} pro Monat</span>`;
+
+const SORT = {
+  price:       (a, b) => a.price - b.price,
+  range:       (a, b) => (b.ev_range || 0) - (a.ev_range || 0),
+  power:       (a, b) => b.ps - a.ps,
+  consumption: (a, b) => (a.consumption || 99) - (b.consumption || 99)
+};
+
+function render() {
+  const list = [...pool].sort(SORT[mode]);
+  document.getElementById('list').innerHTML = list.map((c, i) => {
+    const t = cfg.tag(c, i, list) || {};
+    return carCard(c, { from: type, specs: cfg.spec(c), tag: t.tag, tagClass: t.cls });
+  }).join('');
+}
+document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[data-s]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); mode = b.dataset.s; track('drive_sort', { type, mode }); render();
+});
+render();
+</script>
+</body>
+</html>

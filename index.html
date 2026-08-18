@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FINN — Auto-Abo. Alles inklusive. (Prototyp Variante B)</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+
+<div class="hero">
+  <div class="hero-in">
+    <div class="hero-copy">
+      <h1>Welches Auto passt zu dir?</h1>
+    </div>
+
+    <div class="choices">
+      <a class="choice" href="small.html" onclick="track('segment_selected',{segment:'small'})">
+        <span class="t">Klein</span>
+        <span class="s" id="s-small"></span>
+      </a>
+      <a class="choice" href="family.html" onclick="track('segment_selected',{segment:'family'})">
+        <span class="t">Familie</span>
+        <span class="s" id="s-family"></span>
+      </a>
+      <a class="choice" href="sport.html" onclick="track('segment_selected',{segment:'sport'})">
+        <span class="t">Sport</span>
+        <span class="s" id="s-sport"></span>
+      </a>
+    </div>
+
+    <div class="hero-alt"><a href="#alle" onclick="track('search_fallback')" id="allLink">Alle Modelle ansehen</a></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Ein Preis. Alles drin.</h2>
+      <p class="mute">Versicherung, Steuer, Wartung, Zulassung, Verschleiß und Hauptuntersuchung sind immer enthalten. Du zahlst nur noch Strom oder Sprit.</p>
+    </div>
+    <div class="grid4">
+      <div class="usp"><div class="n">01</div><h3>Neuwagen</h3><p class="mute small">Keine Abnutzung, kein Gebrauchtwagenrisiko. Direkt startklar.</p></div>
+      <div class="usp"><div class="n">02</div><h3>Ab 6 Monaten</h3><p class="mute small">Kurze Laufzeiten statt 3 Jahre Leasingbindung.</p></div>
+      <div class="usp"><div class="n">03</div><h3>Lieferung nach Hause</h3><p class="mute small">Online abschließen, wir liefern bis vor die Haustür.</p></div>
+      <div class="usp"><div class="n">04</div><h3>Keine Anzahlung</h3><p class="mute small">Optional Anzahlung leisten und die Monatsrate senken.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="alle">
+  <div class="wrap">
+    <div class="sec-head"><h2>Unsere beliebtesten Modelle</h2>
+      <p class="mute">In Variante B liegt diese Liste bewusst <em>unter</em> der Auswahl — nicht darüber. Wer nicht segmentiert werden will, kommt trotzdem durch.</p></div>
+    <div class="cars" id="popular"></div>
+    <div style="margin-top:28px"><a class="btn ghost" href="small.html">Alle Modelle ansehen</a></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap grid3" style="align-items:center;gap:48px">
+    <div style="grid-column:span 2">
+      <h2>Warum drei Karten statt einer Suchleiste?</h2>
+      <p class="mute">Eine Suche setzt voraus, dass der Nutzer sein Ziel schon kennt. Die meisten Besucher wissen aber nur, <strong>warum</strong> sie ein Auto brauchen — nicht welches. Drei Karten übersetzen ein Bedürfnis in eine Empfehlung und segmentieren den Traffic ab dem ersten Klick.</p>
+      <p><a class="btn" href="ab-test.html">Das Testkonzept ansehen</a></p>
+    </div>
+    <div><img src="assets/ui/delivery.jpg" alt="FINN Lieferung" style="border-radius:22px"></div>
+  </div>
+</section>
+
+<div id="ftr"></div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+mount('home');
+document.getElementById('s-small').textContent  = `${seg('small').length} Modelle · ab ${priceFrom(seg('small'))}`;
+document.getElementById('s-family').textContent = '2 Fragen, 3 Autos';
+document.getElementById('s-sport').textContent  = `${seg('sport').length} Modelle · sofort verfügbar`;
+document.getElementById('allLink').textContent  = `Alle ${CARS.length} Modelle ansehen`;
+track('page_view', {page:'home', variant:'B'});
+const pop = ['tesla','bmw','audi','fiat','byd','toyota'];
+const picks = [];
+pop.forEach(b => { const c = CARS.find(x => x.brand.toLowerCase().startsWith(b) && !picks.includes(x)); if (c) picks.push(c); });
+document.getElementById('popular').innerHTML = picks.slice(0,4).map(c => carCard(c,{from:'home'})).join('');
+</script>
+</body>
+</html>

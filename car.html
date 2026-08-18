@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fahrzeug — FINN Prototyp</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<div class="wrap crumb" id="crumb"></div>
+<div class="wrap"><div class="pdp">
+  <div>
+    <div class="gal"><img id="img" src="" alt=""></div>
+    <div id="segpitch"></div>
+    <h2 style="margin-top:34px;font-size:24px">Ausstattung</h2>
+    <div id="equip"></div>
+  </div>
+  <div>
+    <div class="pricebox">
+      <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)" id="brand"></div>
+      <h1 style="font-size:32px;margin:4px 0 6px" id="model"></h1>
+      <div class="mute small" id="specline"></div>
+
+      <div class="specs" id="specs"></div>
+
+      <div style="font-size:13px;font-weight:600;margin-top:6px">Laufzeit</div>
+      <div class="opts-inline" id="terms"></div>
+
+      <div style="font-size:13px;font-weight:600">Kilometer pro Monat</div>
+      <div class="opts-inline" id="kms"></div>
+
+      <div class="row"><span>Grundrate</span><span id="base"></span></div>
+      <div class="row"><span id="kmLbl">Kilometerpaket</span><span id="kmPrice"></span></div>
+      <div class="row"><span>Versicherung, Steuer, Wartung, Zulassung</span><span style="color:var(--good)">inklusive</span></div>
+      <div class="row tot"><span>Monatlich</span><span id="total"></span></div>
+
+      <div style="margin-top:18px"><button class="btn lg" style="width:100%" id="book">Jetzt abonnieren</button></div>
+      <div class="small mute center" style="margin-top:10px" id="avail"></div>
+
+      <ul class="incl">
+        <li>Neuwagen, direkt startklar</li>
+        <li>Lieferung bis vor die Haustür</li>
+        <li>Keine Anzahlung nötig</li>
+        <li>Mehrkilometer <span id="extraKm"></span>/km — transparent abgerechnet</li>
+      </ul>
+    </div>
+  </div>
+</div></div>
+
+<div class="wrap" style="padding-bottom:70px">
+  <h2>Ähnliche Modelle</h2>
+  <div class="cars" id="similar"></div>
+</div>
+
+<div id="ftr"></div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const c = by(qs('id')) || CARS[0];
+const from = qs('from') || 'direct';
+const DRIVE_ENTRY = ['elektro', 'hybrid', 'verbrenner', 'home_c'];
+if (DRIVE_ENTRY.includes(from)) window.VARIANT = 'C';   // must precede mount()
+if (from === 'sport') document.body.classList.add('dark');
+mount(from);
+track('page_view', {page:'pdp', car:c.id, from, variant:VARIANT()});
+document.title = `${c.brand} ${c.model} im Auto-Abo — FINN Prototyp`;
+
+const segName = {
+  small:['Klein & günstig','small.html'], family:['Familie','family-results.html'],
+  family_upsell:['Familie','family-results.html'], sport:['Sport','sport.html'],
+  elektro:['Elektro','drive.html?type=elektro'], hybrid:['Hybrid','drive.html?type=hybrid'],
+  verbrenner:['Benzin & Diesel','drive.html?type=verbrenner'],
+  home:['Start','index.html'], home_c:['Start','index-c.html'], direct:['Start','index.html']
+}[from] || ['Start','index.html'];
+document.getElementById('crumb').innerHTML = `<a href="${HOME()}">Start</a> › <a href="${segName[1]}">${segName[0]}</a> › ${c.brand} ${c.model}`;
+
+document.getElementById('img').src = c.img;
+document.getElementById('brand').textContent = c.brand;
+document.getElementById('model').textContent = c.model + (c.trim ? ' ' + c.trim : '');
+document.getElementById('specline').textContent = `${c.type} · ${c.gear} · ${c.color}`;
+document.getElementById('extraKm').textContent = (c.km_extra ? c.km_extra.toFixed(2).replace('.', ',') : '0,25') + ' €';
+document.getElementById('avail').textContent = 'Verfügbar ab ' + (c.available ? new Date(c.available).toLocaleDateString('de-DE') : 'sofort');
+
+document.getElementById('specs').innerHTML = [
+  [c.ps + ' PS', 'Leistung'],
+  [c.seats + ' Sitze', c.doors + ' Türen'],
+  [c.fuel, c.drive || 'Frontantrieb'],
+  [c.ev_range ? c.ev_range + ' km' : (c.consumption ? c.consumption + ' l/100km' : (c.efficiency || '—')), c.ev_range ? 'Reichweite' : 'Verbrauch']
+].map(([b, s]) => `<div class="spec"><b>${b}</b><span>${s}</span></div>`).join('');
+
+/* segment-specific pitch — same car, different argument */
+const pitches = {
+  small: `<div style="background:var(--soft);border-radius:var(--rl);padding:22px;margin-top:22px">
+    <h3>Was du bei FINN <em>nicht</em> extra zahlst</h3>
+    <div class="mute small">Beim Leasing kämen zu deiner Rate im Schnitt noch ~175 €/Monat dazu.</div>
+    <div style="display:flex;gap:26px;flex-wrap:wrap;margin-top:14px" class="small">
+      <span>Versicherung <s class="mute">95 €</s></span><span>Steuer <s class="mute">15 €</s></span>
+      <span>Wartung <s class="mute">55 €</s></span><span>Zulassung <s class="mute">10 €</s></span></div></div>`,
+  family: `<div style="background:var(--soft);border-radius:var(--rl);padding:22px;margin-top:22px">
+    <h3>Sicherheit für die Familie</h3>
+    <ul class="incl" style="columns:2">${(c.safety || []).slice(0, 6).map(s => `<li>${s}</li>`).join('')}</ul>
+    <div class="small mute" style="margin-top:10px">${c.seats} Sitzplätze · Isofix serienmäßig · Neuwagen mit voller Herstellergarantie</div></div>`,
+  sport: `<div style="background:#151515;border:1px solid #242424;border-radius:var(--rl);padding:24px;margin-top:22px">
+    <h3 style="color:#fff">${c.ps} PS. ${c.drive === 'Allrad' ? 'Allrad. ' : ''}Neupreis ${eur(c.msrp)}.</h3>
+    <p class="mute" style="margin:0">Im Abo statt im Besitz — 6 bis 24 Monate, danach einfach das nächste Auto. Kein Wertverlust, kein Wiederverkauf, keine Diskussion mit dem Händler.</p></div>`
+};
+pitches.family_upsell = pitches.family;
+
+/* variant C arrives by drivetrain, so the PDP argues the drivetrain */
+pitches.elektro = `<div style="background:var(--soft);border-radius:var(--rl);padding:22px;margin-top:22px">
+  <h3>Was dich das Fahren kostet</h3>
+  <div class="mute small">Bei 0,39 €/kWh gegenüber 1,75 €/l Benzin — deine Preise können abweichen.</div>
+  <div style="display:flex;gap:34px;flex-wrap:wrap;margin-top:14px">
+    <div><div class="small mute">100 km elektrisch</div><b style="font-family:'SuisseIntl';font-size:22px;color:var(--good)">7,02 €</b></div>
+    <div><div class="small mute">100 km Benzin</div><b style="font-family:'SuisseIntl';font-size:22px">11,38 €</b></div>
+    ${c.ev_range ? `<div><div class="small mute">Reichweite (WLTP)</div><b style="font-family:'SuisseIntl';font-size:22px">${c.ev_range} km</b></div>` : ''}
+  </div>
+  <div class="small mute" style="margin-top:12px">Ladekarte und Strom sind nicht im Abo enthalten — Versicherung, Steuer, Wartung und Zulassung schon.</div></div>`;
+
+const liter = c.drive_type !== 'elektro' && c.consumption
+  ? `Werksangabe <b>${String(c.consumption).replace('.', ',')} l/100 km</b>.` : '';
+pitches.hybrid = `<div style="background:var(--soft);border-radius:var(--rl);padding:22px;margin-top:22px">
+  <h3>Sparsam ohne Ladekabel</h3>
+  <p class="mute" style="margin:0">${c.engine || 'Hybridantrieb'} — elektrisch im Stadtverkehr, Verbrenner auf der Langstrecke.
+  ${liter}
+  Keine Wallbox, keine Ladeplanung, Tanken in fünf Minuten.</p></div>`;
+
+pitches.verbrenner = `<div style="background:var(--soft);border-radius:var(--rl);padding:22px;margin-top:22px">
+  <h3>Einsteigen und losfahren</h3>
+  <p class="mute" style="margin:0">${c.fuel}${liter ? ', ' + liter.replace('Werksangabe ', 'Werksangabe ').replace('.', '') : ''}.
+  Keine Ladeinfrastruktur nötig — und mit Versicherung, Steuer, Wartung und Zulassung im Preis bleibt trotzdem nur eine Rechnung im Monat.</p></div>`;
+// a drivetrain entry argues the car's ACTUAL drivetrain, never the path that got us
+// here — otherwise a stale link prints litres per 100 km on an electric car
+const pitchKey = DRIVE_ENTRY.includes(from) ? c.drive_type : from;
+document.getElementById('segpitch').innerHTML = pitches[pitchKey] || '';
+
+const eqBox = [];
+if ((c.comfort || []).length) eqBox.push(['Komfort', c.comfort]);
+if ((c.safety || []).length) eqBox.push(['Sicherheit', c.safety]);
+document.getElementById('equip').innerHTML = eqBox.map(([t, l]) =>
+  `<div style="margin-bottom:14px"><div class="small" style="font-weight:600;margin-bottom:6px">${t}</div>${l.map(x => `<span class="mini">${x}</span>`).join('')}</div>`).join('');
+
+/* pricing */
+const terms = Object.keys(c.terms).map(Number).sort((a, b) => a - b);
+let term = c.term, km = 500;
+const kmKeys = Object.keys(c.km || {}).map(Number).sort((a, b) => a - b).filter(k => k <= 2000);
+
+document.getElementById('terms').innerHTML = terms.map(t => `<button class="chip ${t === term ? 'on' : ''}" data-t="${t}">${t} Monate</button>`).join('');
+document.getElementById('kms').innerHTML = (kmKeys.length ? kmKeys : [500]).map(k => `<button class="chip ${k === km ? 'on' : ''}" data-km="${k}">${k.toLocaleString('de-DE')} km</button>`).join('');
+
+function paint() {
+  const b = c.terms[term] || c.terms[String(term)] || c.price;
+  const add = (c.km || {})[km] || (c.km || {})[String(km)] || 0;
+  document.getElementById('base').textContent = eur(b);
+  document.getElementById('kmLbl').textContent = `Kilometerpaket (${km.toLocaleString('de-DE')} km)`;
+  document.getElementById('kmPrice').textContent = add ? '+ ' + eur(add) : 'inklusive';
+  document.getElementById('total').textContent = eur(b + add) + ' /Monat';
+}
+document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[data-t]').forEach(x => x.classList.remove('on')); b.classList.add('on');
+  term = +b.dataset.t; track('term_changed', {car:c.id, term}); paint();
+});
+document.querySelectorAll('[data-km]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[data-km]').forEach(x => x.classList.remove('on')); b.classList.add('on');
+  km = +b.dataset.km; track('km_upsell', {car:c.id, km}); paint();
+});
+paint();
+
+document.getElementById('book').onclick = () => {
+  track('checkout_start', {car:c.id, term, km, from});
+  alert(`Prototyp-Ende 🚗\n\n${c.brand} ${c.model}\n${term} Monate · ${km.toLocaleString('de-DE')} km/Monat\n\nAb hier läuft der bestehende FINN-Checkout unverändert weiter — der A/B-Test endet vor diesem Schritt.`);
+};
+
+const sim = CARS.filter(x => x.id !== c.id && x.seg.some(s => c.seg.includes(s)))
+  .sort((a, b) => Math.abs(a.price - c.price) - Math.abs(b.price - c.price)).slice(0, 4);
+document.getElementById('similar').innerHTML = sim.map(x => carCard(x, { from })).join('');
+</script>
+</body>
+</html>

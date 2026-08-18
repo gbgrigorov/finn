@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sport &amp; Premium — FINN Prototyp</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="dark">
+<div id="hdr"></div>
+
+<div class="sport-hero">
+  <div class="wrap">
+    <div style="font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#8a8a8a;margin-bottom:14px">Die Kollektion</div>
+    <h1 style="max-width:820px">Autos, die man zuerst fühlt.<br>Der Preis kommt später.</h1>
+    <p class="mute" style="max-width:560px;font-size:18px;color:#a8a8a8">Sortiert nach Begehrtheit, nicht nach Rate. Keine Filterleiste, keine Tabellen — 12 Autos, groß gezeigt, sofort verfügbar.</p>
+  </div>
+</div>
+
+<div class="wrap" style="padding-bottom:20px">
+  <div class="bar">
+    <span class="small mute" style="margin-right:4px">Sortierung</span>
+    <button class="chip on" data-sort="desire">Begehrtheit</button>
+    <button class="chip" data-sort="power">Leistung</button>
+    <button class="chip" data-sort="electric">Elektro zuerst</button>
+    <span class="small mute" style="margin-left:auto">Alle Modelle sofort verfügbar · Lieferung nach Hause</span>
+  </div>
+</div>
+
+<div class="wrap" id="hero-cars" style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:26px"></div>
+<div class="wrap"><div class="cars" id="rest" style="padding-bottom:70px"></div></div>
+
+<div id="ftr"></div>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+mount('sport');
+document.body.classList.add('dark');
+track('page_view', {page:'segment_sport', variant:'B'});
+
+let mode = 'desire';
+const pool = seg('sport');
+const sorters = {
+  desire:   (a, b) => b.sport_score - a.sport_score,
+  power:    (a, b) => b.ps - a.ps,
+  electric: (a, b) => (b.fuel === 'Elektro') - (a.fuel === 'Elektro') || b.sport_score - a.sport_score
+};
+
+function bigCard(c) {
+  return `<a href="car.html?id=${encodeURIComponent(c.id)}&from=sport" style="display:block;background:#151515;border:1px solid #242424;border-radius:22px;overflow:hidden">
+    <div style="background:linear-gradient(160deg,#1f1f1f,#101010);padding:26px;display:flex;align-items:center;justify-content:center;min-height:280px">
+      <img src="${c.img}" alt="${c.brand} ${c.model}" style="max-height:250px;object-fit:contain">
+    </div>
+    <div style="padding:22px 26px 26px">
+      <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#8a8a8a">${c.brand}</div>
+      <h3 style="font-size:30px;margin:4px 0 12px;color:#fff">${c.model}</h3>
+      <div style="display:flex;gap:22px;font-size:14px;color:#bdbdbd;margin-bottom:18px">
+        <span><b style="color:#fff;font-family:'SuisseIntl'">${c.ps}</b> PS</span>
+        <span><b style="color:#fff;font-family:'SuisseIntl'">${c.fuel}</b></span>
+        ${c.drive === 'Allrad' ? '<span><b style="color:#fff;font-family:\'SuisseIntl\'">Allrad</b></span>' : ''}
+        ${c.ev_range ? `<span><b style="color:#fff;font-family:'SuisseIntl'">${c.ev_range}</b> km</span>` : ''}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid #242424;padding-top:16px">
+        <span style="font-size:13px;color:#8a8a8a">Neupreis ${eur(c.msrp)} · im Abo</span>
+        <span style="font-family:'SuisseIntl';font-size:22px;color:#fff">${eur(c.price)}<span style="font-size:13px;color:#8a8a8a">/Mon.</span></span>
+      </div>
+    </div></a>`;
+}
+
+function render() {
+  const list = [...pool].sort(sorters[mode]);
+  document.getElementById('hero-cars').innerHTML = list.slice(0, 4).map(bigCard).join('');
+  document.getElementById('rest').innerHTML = list.slice(4, 12)
+    .map(c => carCard(c, { from: 'sport', specs: `${c.ps} PS · ${c.fuel}${c.drive === 'Allrad' ? ' · Allrad' : ''}` })).join('');
+}
+document.querySelectorAll('[data-sort]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[data-sort]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); mode = b.dataset.sort; track('sport_sort', {mode}); render();
+});
+render();
+</script>
+</body>
+</html>
